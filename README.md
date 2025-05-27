@@ -1,2 +1,0 @@
-# mindar
-mindar
