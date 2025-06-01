@@ -1,61 +1,80 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8" />
+    <title>Multi Target AR with Subtitles</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
-    <style>body { margin: 0; overflow: hidden; }</style>
+    <style>
+      body { margin: 0; overflow: hidden; }
+    </style>
   </head>
   <body>
-    <a-scene 
-      mindar-image="imageTargetSrc: targets(8).mind;"
+    <a-scene
+      mindar-image="imageTargetSrc: targets(8).mind; maxTrack: 2;"
       embedded
       color-space="sRGB"
       renderer="colorManagement: true; physicallyCorrectLights: true"
       vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: true">
-
+      device-orientation-permission-ui="enabled: true"
+    >
       <a-assets>
-        <img id="cardImg" src="紀念品_工作區域1.png" />
+        <img id="img0" src="紀念品_工作區域1.png" />
+        <img id="img1" src="未命名-1-05.png" />
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
+      <!-- 圖像 0 -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-plane src="#cardImg" position="0 0 0" rotation="0 0 0" scale="3.5 3 1"></a-plane>
-        <a-text id="subtitleText" value="" position="0 -0.7 0" align="center" width="2" color="white"></a-text>
+        <a-plane src="#img0" position="0 0 0" scale="3 3 1"></a-plane>
+        <a-text id="subtitle0" value="" position="0 -1 0" align="center" width="2" color="white"></a-text>
+      </a-entity>
+
+      <!-- 圖像 1 -->
+      <a-entity mindar-image-target="targetIndex: 1">
+        <a-plane src="#img1" position="0 0 0" scale="3 3 1"></a-plane>
+        <a-text id="subtitle1" value="" position="0 -1 0" align="center" width="2" color="white"></a-text>
       </a-entity>
     </a-scene>
 
     <script>
-      const subtitles = [
-        "這是一段圖片介紹。",
-        "這是第二句說明內容。",
-        "最後一句，謝謝觀看。"
-      ];
+      // 多張圖對應字幕
+      const subtitlesMap = {
+        0: ["第一張圖 - 歡迎", "第一張圖 - 說明", "第一張圖 - 結尾"],
+        1: ["第二張圖 - 開始", "第二張圖 - 詳細內容", "第二張圖 - 完成"]
+      };
 
-      const textEl = document.querySelector("#subtitleText");
-      const entity = document.querySelector("a-entity[mindar-image-target]");
-      let timer = null;
+      // 幫每個圖像做字幕顯示與更新
+      function setupSubtitles(index) {
+        const textEl = document.querySelector(`#subtitle${index}`);
+        const entity = document.querySelector(`a-entity[mindar-image-target="targetIndex: ${index}"]`);
+        let timer = null;
 
-      entity.addEventListener("targetFound", () => {
-        let i = 0;
-        textEl.setAttribute("value", subtitles[i]);
-        i++;
+        entity.addEventListener("targetFound", () => {
+          let i = 0;
+          textEl.setAttribute("value", subtitlesMap[index][i]);
+          i++;
 
-        timer = setInterval(() => {
-          if (i < subtitles.length) {
-            textEl.setAttribute("value", subtitles[i]);
-            i++;
-          } else {
-            clearInterval(timer);
-          }
-        }, 3000); // 每3秒換一行
-      });
+          timer = setInterval(() => {
+            if (i < subtitlesMap[index].length) {
+              textEl.setAttribute("value", subtitlesMap[index][i]);
+              i++;
+            } else {
+              clearInterval(timer);
+            }
+          }, 3000); // 每 3 秒換一句
+        });
 
-      entity.addEventListener("targetLost", () => {
-        clearInterval(timer);
-        textEl.setAttribute("value", "");
-      });
+        entity.addEventListener("targetLost", () => {
+          clearInterval(timer);
+          textEl.setAttribute("value", "");
+        });
+      }
+
+      setupSubtitles(0);
+      setupSubtitles(1);
     </script>
   </body>
 </html>
+
