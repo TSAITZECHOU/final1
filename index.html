@@ -1,64 +1,61 @@
+<!DOCTYPE html>
 <html>
   <head>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/aframe/mindar-image-aframe.prod.js"></script>
-    <style>
-      body { margin: 0; overflow: hidden; }
-    </style>
+    <style>body { margin: 0; overflow: hidden; }</style>
   </head>
   <body>
-    <a-scene mindar-image="imageTargetSrc: end1.mind;" color-space="sRGB" 
-         height="1.2" width="0.5" 
-         renderer="colorManagement: true; physicallyCorrectLights: true" 
-         vr-mode-ui="enabled: false" 
-         embedded>
-  
+    <a-scene 
+      mindar-image="imageTargetSrc: targets(8).mind;"
+      embedded
+      color-space="sRGB"
+      renderer="colorManagement: true; physicallyCorrectLights: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: true">
+
       <a-assets>
-        <img id="card10" src="紀念品.png" />
+        <img id="cardImg" src="紀念品_工作區域1.png" />
       </a-assets>
-    
+
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-    
-      <a-entity mindar-image-target="targetIndex: 0" light="type: ambient; intensity: 1;">
-        
-        <!-- 圖片 -->
-        <a-plane src="#card10" position="0 0 0" rotation="0 0 0" scale="3.5 3 3" alpha-test="1" opacity="1"></a-plane>
-        
-        <!-- 字幕 -->
-        <a-text id="subtitleText" value="" position="0 -0.7 0.01" align="center" width="1.8" color="white"></a-text>
-      
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-plane src="#cardImg" position="0 0 0" rotation="0 0 0" scale="3.5 3 1"></a-plane>
+        <a-text id="subtitleText" value="" position="0 -0.7 0" align="center" width="2" color="white"></a-text>
       </a-entity>
     </a-scene>
 
-<script>
-  // 當 AR target 被掃描到
-  document.querySelector("a-entity[mindar-image-target]")
-    .addEventListener("targetFound", () => {
+    <script>
+      const subtitles = [
+        "這是一段圖片介紹。",
+        "這是第二句說明內容。",
+        "最後一句，謝謝觀看。"
+      ];
 
-    const subtitle = document.querySelector("#subtitleText");
+      const textEl = document.querySelector("#subtitleText");
+      const entity = document.querySelector("a-entity[mindar-image-target]");
+      let timer = null;
 
-    const subtitles = [
-      "這是一段圖片介紹。",
-      "這是第二句說明內容。",
-      "最後一句，謝謝觀看。"
-    ];
+      entity.addEventListener("targetFound", () => {
+        let i = 0;
+        textEl.setAttribute("value", subtitles[i]);
+        i++;
 
-    let index = 0;
+        timer = setInterval(() => {
+          if (i < subtitles.length) {
+            textEl.setAttribute("value", subtitles[i]);
+            i++;
+          } else {
+            clearInterval(timer);
+          }
+        }, 3000); // 每3秒換一行
+      });
 
-    // 先顯示第一句
-    subtitle.setAttribute("value", subtitles[index]);
-    index++;
-
-    const interval = setInterval(() => {
-      subtitle.setAttribute("value", subtitles[index]);
-      index++;
-      if (index >= subtitles.length) {
-        clearInterval(interval); // 播放結束
-      }
-    }, 3000); // 每3秒切換字幕
-
-  });
-</script>
-
- </body>
+      entity.addEventListener("targetLost", () => {
+        clearInterval(timer);
+        textEl.setAttribute("value", "");
+      });
+    </script>
+  </body>
 </html>
